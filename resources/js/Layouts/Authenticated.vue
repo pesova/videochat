@@ -6,6 +6,7 @@ import BreezeDropdownLink from '@/Components/DropdownLink.vue';
 import BreezeNavLink from '@/Components/NavLink.vue';
 import BreezeResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/inertia-vue3';
+import '@/Components/simplepeer.min.js'
 
 const showingNavigationDropdown = ref(false);
 </script>
@@ -30,6 +31,10 @@ const showingNavigationDropdown = ref(false);
                                 <BreezeNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Dashboard
                                 </BreezeNavLink>
+
+                                <BreezeNavLink :href="route('video.chat')" :active="route().current('video.chat')">
+                                    Video Chat
+                                </BreezeNavLink>
                             </div>
                         </div>
 
@@ -52,6 +57,10 @@ const showingNavigationDropdown = ref(false);
                                     <template #content>
                                         <BreezeDropdownLink :href="route('logout')" method="post" as="button">
                                             Log Out
+                                        </BreezeDropdownLink>
+
+                                        <BreezeDropdownLink :href="route('video.chat')" method="get" as="button">
+                                            Video chat
                                         </BreezeDropdownLink>
                                     </template>
                                 </BreezeDropdown>
