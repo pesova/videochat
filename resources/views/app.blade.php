@@ -6,7 +6,9 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         @if (Auth::check()) 
                 <meta name="user_id" content="{{ Auth::user()->id }}" />
-        @endif 
+        @else
+            <meta name="user_id" content=""/>
+        @endif
 
         {{-- <script src="./simplepeer.min.js"></script> --}}
 

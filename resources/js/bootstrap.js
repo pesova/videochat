@@ -45,5 +45,5 @@ window.Echo = new Echo({
 
 // });
 
-Pusher.logToConsole = true;
+// Pusher.logToConsole = true;
 

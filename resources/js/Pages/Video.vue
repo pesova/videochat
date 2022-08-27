@@ -10,21 +10,20 @@
             </h2>
         </template>
 
-
         <div>
-            <div class="container">
-            <div class="row">
-                <div class="col">
-                <div class="btn-group" role="group">
+            <div class="container mx-auto sm:px-4">
+            <div class="flex flex-wrap ">
+                <div class="relative flex-grow max-w-full flex-1 px-4">
+                <div class="relative inline-flex align-middle" role="group">
                     <button
                     type="button"
-                    class="btn btn-primary mr-2"
+                    class="inline-block align-middle text-center select-none border font-normal whitespace-no-wrap rounded py-1 px-3 leading-normal no-underline bg-blue-600 text-white hover:bg-blue-600 mr-2"
                     v-for="user in allusers"
                     :key="user.id"
                     @click="placeVideoCall(user.id, user.name)"
                     >
                     Call {{ user.name }}
-                    <span class="badge badge-light">{{
+                    <span class="inline-block p-1 text-center font-semibold text-sm align-baseline leading-none rounded bg-gray-100 text-gray-800 hover:bg-gray-200">{{
                         getUserOnlineStatus(user.id)
                     }}</span>
                     </button>
@@ -32,21 +31,17 @@
                 </div>
             </div>
             <!--Placing Video Call-->
-            <div class="row mt-5" id="video-row">
-                <div class="col-12 video-container" v-if="callPlaced">
+            <div class="flex flex-wrap  mt-5" id="video-row">
+                <div class="w-full video-container" v-if="callPlaced">
                 <video
                     ref="userVideo"
                     muted
-                    playsinline
-                    autoplay
                     class="cursor-pointer"
                     :class="isFocusMyself === true ? 'user-video' : 'partner-video'"
                     @click="toggleCameraArea"
                 />
                 <video
                     ref="partnerVideo"
-                    playsinline
-                    autoplay
                     class="cursor-pointer"
                     :class="isFocusMyself === true ? 'partner-video' : 'user-video'"
                     @click="toggleCameraArea"
@@ -54,7 +49,7 @@
                 />
                 <div class="partner-video" v-else>
                     <div v-if="callPartner" class="column items-center q-pt-xl">
-                    <div class="col q-gutter-y-md text-center">
+                    <div class="relative flex-grow max-w-full flex-1 px-4 q-gutter-y-md text-center">
                         <p class="q-pt-md">
                         <strong>{{ callPartner }}</strong>
                         </p>
@@ -63,17 +58,17 @@
                     </div>
                 </div>
                 <div class="action-btns">
-                    <button type="button" class="btn btn-info" @click="toggleMuteAudio">
+                    <button type="button" class="inline-block align-middle text-center select-none border font-normal whitespace-no-wrap rounded py-1 px-3 leading-normal no-underline bg-teal-500 text-white hover:bg-teal-600" @click="toggleMuteAudio">
                     {{ mutedAudio ? "Unmute" : "Mute" }}
                     </button>
                     <button
                     type="button"
-                    class="btn btn-primary mx-4"
+                    class="inline-block align-middle text-center select-none border font-normal whitespace-no-wrap rounded py-1 px-3 leading-normal no-underline bg-blue-600 text-white hover:bg-blue-600 mx-4"
                     @click="toggleMuteVideo"
                     >
                     {{ mutedVideo ? "ShowVideo" : "HideVideo" }}
                     </button>
-                    <button type="button" class="btn btn-danger" @click="endCall">
+                    <button type="button" class="inline-block align-middle text-center select-none border font-normal whitespace-no-wrap rounded py-1 px-3 leading-normal no-underline bg-red-600 text-white hover:bg-red-700" @click="endCall">
                     EndCall
                     </button>
                 </div>
@@ -82,15 +77,15 @@
             <!-- End of Placing Video Call  -->
 
             <!-- Incoming Call  -->
-            <div class="row" v-if="incomingCallDialog">
-                <div class="col">
+            <div class="flex flex-wrap " v-if="incomingCallDialog()">
+                <div class="relative flex-grow max-w-full flex-1 px-4">
                 <p>
-                    Incoming Call From <strong>{{ callerDetails.name }}</strong>
+                    Incoming Call From <strong>{{ callerDetails().name }}</strong>
                 </p>
-                <div class="btn-group" role="group">
+                <div class="relative inline-flex align-middle" role="group">
                     <button
                     type="button"
-                    class="btn btn-danger"
+                    class="inline-block align-middle text-center select-none border font-normal whitespace-no-wrap rounded py-1 px-3 leading-normal no-underline bg-red-600 text-white hover:bg-red-700"
                     data-dismiss="modal"
                     @click="declineCall"
                     >
@@ -98,10 +93,10 @@
                     </button>
                     <button
                     type="button"
-                    class="btn btn-success ml-5"
+                    class="inline-block align-middle text-center select-none border font-normal whitespace-no-wrap rounded py-1 px-3 leading-normal no-underline bg-green-500 text-white hover:bg-green-600 ml-5"
                     @click="acceptCall"
                     >
-                    Accept
+                    Accept 
                     </button>
                 </div>
                 </div>
@@ -118,32 +113,39 @@ import { Head } from '@inertiajs/inertia-vue3';
 import { onMounted, ref } from 'vue';
 // import Peer from 'simple-peer'
 
-// import { VueWebRTC } from 'vue-webrtc'
-// // Vue.component(VueWebRTC.name, VueWebRTC)
-
-// app.component('VueWebRTC', VueWebRTC)
-
-// const onConnection = (socket) => {
-//     socket.on('joinRoom', events.joinRoom(socket, namespace)) // Join a room
-//     socket.on('publicMessage', events.publicMessage(namespace)) // New public messages
-//     socket.on('leaveRoom', events.leaveRoom(socket, namespace)) // Leave room
-//     socket.on('leaveChat', events.leaveChat(socket, namespace)) // Leave the chat
-//     socket.on('joinPrivateRoom', events.joinPrivateRoom(socket, namespace)) // Join private chat
-//     socket.on('leavePrivateRoom', events.leavePrivateRoom(socket, namespace)) // Leave private chat
-//     socket.on('privateMessage', events.privateMessage(namespace)) // Private message
-//     socket.on('changeStatus', events.changeStatus(socket, namespace)) // // Set status
-// }
 
 const video_src = ref('');
 const user1Stream = ref();
-const user_id = document.querySelector("meta[name='user_id']").getAttribute('content');
+const user_id = ref();
+
 
 const props = defineProps(['allusers']);
+let authuserid = user_id;
+
+onMounted(() => {
+    user_id.value = document.querySelector("meta[name='user_id']").getAttribute('content');
+    
+    initializeChannel(); // this initializes laravel echo
+    initializeCallListeners();
+
+    // let peer2 = new SimplePeer({ initiator: true })
+
+    // Echo.join('my-channel', (data) => {
+    //     console.log(data)
+    // })
+    
+    // peer2.on('my-channel', (data) => {
+    //     console.log(data)
+    // })
+
+    // const socket = new WebSocket('localhost')
 
 
+    // getMedia();
 
-// props
-let authuserid = ref();
+})
+
+
 let turn_url = ref();
 let turn_username = ref();
 let turn_credential = ref();
@@ -152,7 +154,6 @@ let userVideo = ref();
 let partnerVideo = ref();
 
 
-//data
 let isFocusMyself = ref(true)
 let callPlaced = ref(false)
 let callPartner = ref()
@@ -173,17 +174,17 @@ let videoCallParams = ref({
 
 
 const incomingCallDialog = () =>  {
-    return videoCallParams.value.receivingCall &&
-    videoCallParams.value.caller !== authuserid
+    return !!(videoCallParams.value.receivingCall &&
+    videoCallParams.value.caller !== authuserid);
 }
 
 
 const callerDetails = () => {
     if (
         videoCallParams.value.caller &&
-        videoCallParams.value.caller !== this.authuserid
+        videoCallParams.value.caller !== authuserid
     ) {
-        const incomingCaller = this.allusers.filter(
+        const incomingCaller = props.allusers.filter(
             (user) => user.id === videoCallParams.value.caller
         );
         return {
@@ -198,12 +199,11 @@ const initializeChannel = () => {
     videoCallParams.value.channel = window.Echo.join("presence-video-channel");
 }
 
-const getMediaPermission = () => {
-    navigator.mediaDevices.getUserMedia(  {video: true}).then((stream) => {
+const getMediaPermission = async () => {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
         videoCallParams.value.stream = stream;
-        if (userVideo) {
-            userVideo.value.srcObject = stream;
-        }
+        userVideo.value.srcObject = stream;
+        userVideo.value.setAttribute('autoplay', '');
       })
       .catch((error) => {
         console.log(error);
@@ -234,13 +234,14 @@ const initializeCallListeners = () => {
     });
 
     // listen to incomming call
-    videoCallParams.value.channel.listen("StartVideoChat", ({ data }) => {
+    videoCallParams.value.channel.listen("VideoChat", ({ data }) => {
         if (data.type === "incomingCall") {
             // add a new line to the sdp to take care of error
             const updatedSignal = {
             ...data.signalData,
             sdp: `${data.signalData.sdp}\n`,
             };
+            console.log('e incoming call?')
             videoCallParams.value.receivingCall = true;
             videoCallParams.value.caller = data.from;
             videoCallParams.value.callerSignal = updatedSignal;
@@ -258,29 +259,25 @@ const placeVideoCall = async (id, name) => {
         initiator: true,
         trickle: false,
         stream: videoCallParams.value.stream,
-        config: {
-            iceServers: [
-                {
-                    urls: turn_url,
-                    username: turn_username,
-                    credential: turn_credential,
-                },
-            ],
-        },
+
     });
 
+    videoCallParams.value.peer1._debug = console.log
+
     videoCallParams.value.peer1.on("signal", (data) => {
-    // send user call signal
-    axios
-        .post("/video/call-user", {
-            user_to_call: id,
-            signal_data: data,
-            from: this.authuserid,
-        })
-        .then(() => {})
-        .catch((error) => {
-            console.log(error);
-        });
+        console.log('on signal l data', data)
+        // send user call signal
+        axios
+            .post("/video/call-user", {
+                user_to_call: id,
+                signal_data: data,
+                from: authuserid,
+            })
+            .then(() => {console.log('axios posted')})
+            .catch((error) => {
+                console.log(error, 'axios error');
+            });
+            
     });
 
     videoCallParams.value.peer1.on("stream", (stream) => {
@@ -295,26 +292,35 @@ const placeVideoCall = async (id, name) => {
     });
 
     videoCallParams.value.peer1.on("error", (err) => {
-        console.log(err);
+        console.log(err, 'error on 1');
     });
 
     videoCallParams.value.peer1.on("close", () => {
         console.log("call closed caller");
     });
 
-    videoCallParams.value.channel.listen("StartVideoChat", ({ data }) => {
+    videoCallParams.value.channel.listen("VideoChat", ({ data }) => {
         if (data.type === "callAccepted") {
-            if (data.signal.renegotiate) {
-            console.log("renegotating");
-            }
-            if (data.signal.sdp) {
+            console.log('call accepted 1')
+            console.log(data, 'signal we are receiving from peer2')
             videoCallParams.value.callAccepted = true;
-            const updatedSignal = {
-                ...data.signal,
-                sdp: `${data.signal.sdp}\n`,
-            };
+
+             const updatedSignal = {...data.signal, sdp: `${data.signal.sdp}\n`,};
+             console.log({updatedSignal})
             videoCallParams.value.peer1.signal(updatedSignal);
-            }
+            // if (data.signal.renegotiate) {
+            //     console.log("renegotating");
+            // }
+            // if (data.signal.sdp) {
+            //     console.log('SPD')
+            //     videoCallParams.value.callAccepted = true;
+            //     const updatedSignal = {
+            //         ...data.signal,
+            //         sdp: `${data.signal.sdp}\n`,
+            //     };
+            //     console.log({updatedSignal});
+            //     videoCallParams.value.peer1.signal(updatedSignal);
+            // }
         }
     });
 }
@@ -324,57 +330,56 @@ const acceptCall = async () => {
     videoCallParams.value.callAccepted = true;
     await getMediaPermission();
     videoCallParams.value.peer2 = new SimplePeer({
-    initiator: false,
-    trickle: false,
-    stream: videoCallParams.value.stream,
-    config: {
-        iceServers: [
-            {
-                urls: turn_url,
-                username: turn_username,
-                credential: turn_credential,
-            },
-        ],
-    },
+        initiator: false,
+        trickle: false,
+        stream: videoCallParams.value.stream,
+        offerOptions: { 
+            offerToReceiveAudio: false, 
+            offerToReceiveVideo: false 
+        }
     });
+    console.log(videoCallParams.value.peer2, 'peer 2 init');
 
     videoCallParams.value.receivingCall = false;
     videoCallParams.value.peer2.on("signal", (data) => {
         axios
             .post("/video/accept-call", {
-            signal: data,
-            to: videoCallParams.value.caller,
+                signal: data,
+                to: videoCallParams.value.caller
             })
-            .then(() => {})
+            .then(() => {console.log('axios sent out for 2')})
             .catch((error) => {
-            console.log(error);
+            console.error(error);
         });
     });
 
     videoCallParams.value.peer2.on("stream", (stream) => {
         videoCallParams.value.callAccepted = true;
+        console.log('streaming 2')
         partnerVideo.value.srcObject = stream;
+        partnerVideo.value.setAttribute('autoplay', '');
     });
 
     videoCallParams.value.peer2.on("connect", () => {
-        console.log("peer connected");
+        console.log("peer connected 2");
         videoCallParams.value.callAccepted = true;
     });
 
     videoCallParams.value.peer2.on("error", (err) => {
-        console.log(err);
+        console.log(err, 'error on 2');
     });
 
     videoCallParams.value.peer2.on("close", () => {
-        console.log("call closed accepter");
+        console.log("call closed accepter2");
     });
 
+    console.log(videoCallParams.value.callerSignal, ' signal being sent to peer1 maybe event')
     videoCallParams.value.peer2.signal(videoCallParams.value.callerSignal);
 }
 
 const toggleCameraArea = () => {
     if (videoCallParams.value.callAccepted) {
-    this.isFocusMyself = !this.isFocusMyself;
+        isFocusMyself.value = !isFocusMyself;
     }
 }
 
@@ -419,8 +424,8 @@ const toggleMuteVideo = () => {
 
 
 const stopStreamedVideo = (videoElem) => {
-    const stream = videoElem.srcObject;
-    const tracks = stream.getTracks();
+    let stream = videoElem.srcObject;
+    let tracks = stream.getTracks();
     tracks.forEach((track) => {
         track.stop();
     });
@@ -434,7 +439,7 @@ const endCall = () => {
     if (!mutedAudio) toggleMuteAudio();
 
     stopStreamedVideo(userVideo);
-    if (this.authuserid === videoCallParams.value.caller) {
+    if (authuserid === videoCallParams.value.caller) {
         videoCallParams.value.peer1.destroy();
     } else {
         videoCallParams.value.peer2.destroy();
@@ -456,6 +461,17 @@ const endCall = () => {
 //         console.log(data)
 //     })
     
+// }
+
+// const onConnection = (socket) => {
+//     socket.on('joinRoom', events.joinRoom(socket, namespace)) // Join a room
+//     socket.on('publicMessage', events.publicMessage(namespace)) // New public messages
+//     socket.on('leaveRoom', events.leaveRoom(socket, namespace)) // Leave room
+//     socket.on('leaveChat', events.leaveChat(socket, namespace)) // Leave the chat
+//     socket.on('joinPrivateRoom', events.joinPrivateRoom(socket, namespace)) // Join private chat
+//     socket.on('leavePrivateRoom', events.leavePrivateRoom(socket, namespace)) // Leave private chat
+//     socket.on('privateMessage', events.privateMessage(namespace)) // Private message
+//     socket.on('changeStatus', events.changeStatus(socket, namespace)) // // Set status
 // }
 
 
@@ -491,37 +507,7 @@ const getMedia = async () => {
 }
 
 
-onMounted(() => {
 
-    // let peer2 = new SimplePeer({ initiator: true })
-
-    // Echo.join('my-channel', (data) => {
-    //     console.log(data)
-    // })
-    
-    // peer2.on('my-channel', (data) => {
-    //     console.log(data)
-    // })
-
-    // const socket = new WebSocket('localhost')
-
-    // console.log("Starting connection to WebSocket Server")
-    // this.connection = new WebSocket("wss://echo.websocket.org")
-
-    // this.connection.onmessage = function(event) {
-    //   console.log(event);
-    // }
-    // this.connection.onopen = function(event) {
-    //   console.log(event)
-    //   console.log("Successfully connected to the echo websocket server...")
-    // }
-
-    // getMedia();
-
-
-
-
-})
 
 // const handleChat = () => {
 //         Echo.channel(`chat_${user_id}`)
