@@ -48,7 +48,7 @@ Route::get('/video/chat', function(){
 
 //     // TestEvent::dispatch(Auth::user(), 'messagtresdfgh');
 //     event(new TestEvent('God abeg'));
-//     // broadcast(new TestEvent('God abeg'));
+//     // broadcast(new TestEvent('God abeg 00'));
 // });
 
 
