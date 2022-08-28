@@ -111,10 +111,26 @@
 import BreezeAuthenticatedLayout from '@/Layouts/Authenticated.vue';
 import { Head } from '@inertiajs/inertia-vue3';
 import { onMounted, ref } from 'vue';
+import io from 'socket.io-client';
 // import Peer from 'simple-peer'
 
 
-const video_src = ref('');
+// const socket = io('ws://127.0.0.1:5173')
+// console.log(socket)
+// const peer = new RTCPeerConnection({
+//             iceServers: [
+//                 {
+//                     urls: "stun:stun.stunprotocol.org"
+//                 },
+//                 {
+//                     urls: 'turn:numb.viagenie.ca',
+//                     credential: 'muazkh',
+//                     username: 'webrtc@live.com'
+//                 },
+//             ]
+//         });
+
+//         console.log(peer);
 const user1Stream = ref();
 const user_id = ref();
 
@@ -122,11 +138,20 @@ const user_id = ref();
 const props = defineProps(['allusers']);
 let authuserid = user_id;
 
+let streamvideo = ref();
+
+let peerUser1 = ref();
+let peerUser2 = ref();
+
+
+
 onMounted(() => {
+    console.log('mounted')
     user_id.value = document.querySelector("meta[name='user_id']").getAttribute('content');
     
     initializeChannel(); // this initializes laravel echo
     initializeCallListeners();
+    getMediaPermission();
 
     // let peer2 = new SimplePeer({ initiator: true })
 
@@ -144,14 +169,13 @@ onMounted(() => {
     // getMedia();
 
 })
-
-
-let turn_url = ref();
-let turn_username = ref();
-let turn_credential = ref();
-
 let userVideo = ref();
 let partnerVideo = ref();
+
+console.log({userVideo});
+
+
+
 
 
 let isFocusMyself = ref(true)
@@ -199,16 +223,46 @@ const initializeChannel = () => {
     videoCallParams.value.channel = window.Echo.join("presence-video-channel");
 }
 
-const getMediaPermission = async () => {
+const getMediaPermission = () => {
     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
-        videoCallParams.value.stream = stream;
-        userVideo.value.srcObject = stream;
-        userVideo.value.setAttribute('autoplay', '');
+        streamvideo.value = stream;
+        // userVideo.value.srcObject = stream;
+        // userVideo.value.setAttribute('autoplay', '');
       })
       .catch((error) => {
         console.log(error);
     });
 }
+
+// const createPeer = async () => {
+//         navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
+//             streamvideo.value = stream;
+            
+
+//             return new SimplePeer({
+//                 initiator: true,
+//                 trickle: false,
+//                 stream: stream,
+//                 config: {
+//                     iceServers: [
+//                             {
+//                                 urls: "stun:stun.stunprotocol.org"
+//                             },
+//                             {
+//                                 urls: 'turn:numb.viagenie.ca',
+//                                 credential: 'muazkh',
+//                                 username: 'webrtc@live.com'
+//                             },
+//                     ],
+//                 },
+
+//             });
+
+//       })
+//       .catch((error) => {
+//         console.log(error);
+//     });
+// }
 
 const initializeCallListeners = () => {
     videoCallParams.value.channel.here((users) => {
@@ -250,54 +304,84 @@ const initializeCallListeners = () => {
 }
 
 
-const placeVideoCall = async (id, name) => {
+const placeVideoCall = (id, name) => {
     callPlaced.value = true;
     callPartner.value = name;
-    await getMediaPermission();
 
-    videoCallParams.value.peer1 = new SimplePeer({
-        initiator: true,
-        trickle: false,
-        stream: videoCallParams.value.stream,
 
-    });
+    
+    // await getMediaPermission().then((stream) => {
 
-    videoCallParams.value.peer1._debug = console.log
+        // console.log(stream)
 
-    videoCallParams.value.peer1.on("signal", (data) => {
-        console.log('on signal l data', data)
-        // send user call signal
-        axios
-            .post("/video/call-user", {
-                user_to_call: id,
-                signal_data: data,
-                from: authuserid,
-            })
-            .then(() => {console.log('axios posted')})
-            .catch((error) => {
-                console.log(error, 'axios error');
-            });
-            
-    });
 
-    videoCallParams.value.peer1.on("stream", (stream) => {
-        console.log("call streaming");
-        if (partnerVideo) {
-            partnerVideo.value.srcObject = stream;
-        }
-    });
 
-    videoCallParams.value.peer1.on("connect", () => {
-        console.log("peer connected");
-    });
+        peerUser1.value = new SimplePeer({
+            initiator: true,
+            trickle: false,
+            stream: streamvideo.value,
+            config: {
+            iceServers: [
+                    {
+                        urls: "stun:stun.stunprotocol.org"
+                    },
+                    {
+                        urls: 'turn:numb.viagenie.ca',
+                        credential: 'muazkh',
+                        username: 'webrtc@live.com'
+                    },
+            ],
+            },
 
-    videoCallParams.value.peer1.on("error", (err) => {
-        console.log(err, 'error on 1');
-    });
+        });
 
-    videoCallParams.value.peer1.on("close", () => {
-        console.log("call closed caller");
-    });
+    setTimeout(() => {
+        userVideo.value.srcObject = streamvideo.value;
+        userVideo.value.setAttribute('autoplay', '');
+
+    }, 1000)
+
+        console.log(peerUser1.value, 'peerUser1.value')
+
+        // peerUser1.value._debug = console.log
+
+        peerUser1.value.on("signal", (data) => {
+            console.log('on signal l data', data)
+            // send user call signal
+            axios
+                .post("/video/call-user", {
+                    user_to_call: id,
+                    signal_data: data,
+                    from: authuserid,
+                })
+                .then(() => {console.log('axios posted')})
+                .catch((error) => {
+                    console.log(error, 'axios error');
+                });
+                
+        });
+
+        peerUser1.value.on("stream", (stream) => {
+            console.log("call streaming");
+            if (partnerVideo) {
+                console
+                partnerVideo.value.srcObject = stream;
+                partnerVideo.value.setAttribute('autoplay', '');
+            }
+        });
+
+        peerUser1.value.on("connect", () => {
+            console.log("peer connected");
+        });
+
+        peerUser1.value.on("error", (err) => {
+            console.log(err, 'error on 1');
+        });
+
+        peerUser1.value.on("close", () => {
+            console.log("call closed caller");
+        });
+    // });
 
     videoCallParams.value.channel.listen("VideoChat", ({ data }) => {
         if (data.type === "callAccepted") {
@@ -307,7 +391,7 @@ const placeVideoCall = async (id, name) => {
 
              const updatedSignal = {...data.signal, sdp: `${data.signal.sdp}\n`,};
              console.log({updatedSignal})
-            videoCallParams.value.peer1.signal(updatedSignal);
+            peerUser1.value.signal(updatedSignal);
             // if (data.signal.renegotiate) {
             //     console.log("renegotating");
             // }
@@ -319,7 +403,7 @@ const placeVideoCall = async (id, name) => {
             //         sdp: `${data.signal.sdp}\n`,
             //     };
             //     console.log({updatedSignal});
-            //     videoCallParams.value.peer1.signal(updatedSignal);
+            //     peerUser1.value.signal(updatedSignal);
             // }
         }
     });
@@ -328,20 +412,34 @@ const placeVideoCall = async (id, name) => {
 const acceptCall = async () => {
     callPlaced.value = true;
     videoCallParams.value.callAccepted = true;
-    await getMediaPermission();
-    videoCallParams.value.peer2 = new SimplePeer({
+    // await getMediaPermission();
+    peerUser2.value = new SimplePeer({
         initiator: false,
         trickle: false,
-        stream: videoCallParams.value.stream,
-        offerOptions: { 
-            offerToReceiveAudio: false, 
-            offerToReceiveVideo: false 
-        }
+        stream: streamvideo.value,
+        config: {
+          iceServers: [
+                {
+                    urls: "stun:stun.stunprotocol.org"
+                },
+                {
+                    urls: 'turn:numb.viagenie.ca',
+                    credential: 'muazkh',
+                    username: 'webrtc@live.com'
+                },
+          ],
+        },
     });
-    console.log(videoCallParams.value.peer2, 'peer 2 init');
+
+    setTimeout(() => {
+        userVideo.value.srcObject = streamvideo.value;
+        userVideo.value.setAttribute('autoplay', '');
+
+    }, 1000)
+    console.log(peerUser2.value, 'peer 2 init');
 
     videoCallParams.value.receivingCall = false;
-    videoCallParams.value.peer2.on("signal", (data) => {
+    peerUser2.value.on("signal", (data) => {
         axios
             .post("/video/accept-call", {
                 signal: data,
@@ -353,28 +451,28 @@ const acceptCall = async () => {
         });
     });
 
-    videoCallParams.value.peer2.on("stream", (stream) => {
+    peerUser2.value.on("stream", (stream) => {
         videoCallParams.value.callAccepted = true;
         console.log('streaming 2')
         partnerVideo.value.srcObject = stream;
         partnerVideo.value.setAttribute('autoplay', '');
     });
 
-    videoCallParams.value.peer2.on("connect", () => {
+    peerUser2.value.on("connect", () => {
         console.log("peer connected 2");
         videoCallParams.value.callAccepted = true;
     });
 
-    videoCallParams.value.peer2.on("error", (err) => {
+    peerUser2.value.on("error", (err) => {
         console.log(err, 'error on 2');
     });
 
-    videoCallParams.value.peer2.on("close", () => {
+    peerUser2.value.on("close", () => {
         console.log("call closed accepter2");
     });
 
     console.log(videoCallParams.value.callerSignal, ' signal being sent to peer1 maybe event')
-    videoCallParams.value.peer2.signal(videoCallParams.value.callerSignal);
+    peerUser2.value.signal(videoCallParams.value.callerSignal);
 }
 
 const toggleCameraArea = () => {
@@ -424,8 +522,8 @@ const toggleMuteVideo = () => {
 
 
 const stopStreamedVideo = (videoElem) => {
-    let stream = videoElem.srcObject;
-    let tracks = stream.getTracks();
+    let streamVid = videoElem.srcObject;
+    let tracks = streamVid.getTracks();
     tracks.forEach((track) => {
         track.stop();
     });
@@ -438,11 +536,12 @@ const endCall = () => {
     if (!mutedVideo) toggleMuteVideo();
     if (!mutedAudio) toggleMuteAudio();
 
-    stopStreamedVideo(userVideo);
+    stopStreamedVideo(userVideo.value);
     if (authuserid === videoCallParams.value.caller) {
-        videoCallParams.value.peer1.destroy();
+        console.log('peerUser1.value ending', peerUser1.value)
+        peerUser1.value.destroy();
     } else {
-        videoCallParams.value.peer2.destroy();
+        peerUser2.value.destroy();
     }
 
     videoCallParams.value.channel.pusher.channels.channels[
